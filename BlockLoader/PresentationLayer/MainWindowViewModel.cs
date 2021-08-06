@@ -15,18 +15,24 @@ namespace BlockLoader.PresentationLayer
 		private readonly IRespondentRepository _respondentRepository;
 		private bool _isBusy;
 		private bool _isGridVisible;
+		private bool _isCountButtonEnabled;
+		private bool _isCountRowVisible;
 
 		public MainWindowViewModel(IBlockRepository blockRepository, IRespondentRepository respondentRepository)
 		{
 			_blockRepository = blockRepository;
 			_respondentRepository = respondentRepository;
 			IsGridVisible = false;
+			IsCountButtonEnabled = false;
+			IsCountRowVisible = false;
 			Blocks = new ObservableCollection<BlockViewModel>();
+			Respondents = new ObservableCollection<Respondent>();
 			LoadBlocksCommand = new AsyncDelegateCommand(LoadBlocks);
+			CountRespondentsCommand = new AsyncDelegateCommand(CountRespondents);
 		}
 
 		public ObservableCollection<BlockViewModel> Blocks { get; }
-
+		public ObservableCollection<Respondent> Respondents { get; }
 		public bool IsBusy
 		{
 			get { return _isBusy; }
@@ -57,8 +63,39 @@ namespace BlockLoader.PresentationLayer
 			}
 		}
 
+		public bool IsCountButtonEnabled
+		{
+			get { return _isCountButtonEnabled; }
+			set
+            {
+				if (value == _isCountButtonEnabled)
+                {
+					return;
+                }
+
+				_isCountButtonEnabled = value;
+				NotifyPropertyChanged(() => IsCountButtonEnabled);
+            }
+		}
+
+		public bool IsCountRowVisible
+        {
+			get { return _isCountRowVisible; }
+			set
+			{
+				if (value == _isCountRowVisible)
+				{
+					return;
+				}
+
+				_isCountRowVisible = value;
+				NotifyPropertyChanged(() => IsCountRowVisible);
+			}
+		}
+
 		public ICommand LoadBlocksCommand { get; }
-		
+		public ICommand CountRespondentsCommand { get; }
+
 		public async Task LoadBlocks()
 		{
 			IsBusy = true;
@@ -66,16 +103,17 @@ namespace BlockLoader.PresentationLayer
 
 			try
 			{
-				ReachedBlockCounter counter = new ReachedBlockCounter();
-				var respondents = _respondentRepository.LoadRespondents();
+				await LoadRespondents();
 				var blocks = await Task.Run(() => _blockRepository.LoadBlocks());
 				Blocks.Clear();
+
 				foreach (var block in blocks)
 				{
-					Blocks.Add(CreateBlockViewModel(block, counter.Count(respondents, block.Code)));
+					Blocks.Add(CreateBlockViewModel(block));
 				}
 
 				IsGridVisible = true;
+				IsCountButtonEnabled = true;
 			}
 			catch (Exception)
 			{
@@ -87,8 +125,55 @@ namespace BlockLoader.PresentationLayer
 				IsBusy = false;
 			}
 		}
+		public async Task LoadRespondents()
+        {
+			IsBusy = true;
+			try
+			{
+				var respondents = await Task.Run(() => _respondentRepository.LoadRespondents());
 
-		private static BlockViewModel CreateBlockViewModel(Block block, int respondentCount)
+				foreach(var respondent in respondents)
+                {
+					Respondents.Add(respondent);
+                }
+			}
+			catch (Exception)
+            {
+				MessageBox.Show(Resources.ErrorLoadingRespondents, Resources.Error, MessageBoxButton.OK, MessageBoxImage.Error);
+				Respondents.Clear();
+			}
+			finally
+            {
+				IsBusy = false;
+            }
+		}
+		public async Task CountRespondents()
+        {
+			IsBusy = true;
+			try
+			{
+				ReachedBlockCounter counter = new ReachedBlockCounter();
+				await Task.Run(() =>
+				{
+					foreach (var block in Blocks)
+					{
+						block.RespondentCount = counter.Count(Respondents, block.Code);
+					}
+				});
+				IsCountRowVisible = true;
+			}
+			catch (Exception)
+            {
+				MessageBox.Show(Resources.ErrorLoadingRespondents, Resources.Error, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+			finally
+            {
+				IsBusy = false;
+            }
+		}
+
+
+		private static BlockViewModel CreateBlockViewModel(Block block, int respondentCount = 0)
 		{
 			return new BlockViewModel(block.Code, block.Footage, block.Program, respondentCount);
 		}
