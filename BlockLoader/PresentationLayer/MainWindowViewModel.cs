@@ -103,7 +103,8 @@ namespace BlockLoader.PresentationLayer
 
 			try
 			{
-				await LoadRespondents();
+				if (_respondentRepository != null) await LoadRespondents();
+				
 				var blocks = await Task.Run(() => _blockRepository.LoadBlocks());
 				Blocks.Clear();
 
