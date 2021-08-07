@@ -4,12 +4,12 @@ namespace BlockLoader.PresentationLayer
 {
 	public class BlockViewModel : NotifyPropertyChangedBase
 	{
-		public BlockViewModel(string code, int footage, string program, int respondentCount)
+		public BlockViewModel(string code, int footage, string program)
 		{
 			Code = code;
 			Footage = footage;
 			Program = program;
-			RespondentCount = respondentCount;
+			RespondentCount = 0;
 		}
 		private int _respondentcount;
 		public string Code { get; }

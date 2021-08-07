@@ -32,6 +32,44 @@ namespace BlockLoader.Tests
 		[TestMethod]
 		public async Task LoadRespondents_AllRespondentsLoaded()
         {
+
+			Respondent[] respondents = CreateRespondents();
+
+			var mainWindowViewModel = new MainWindowViewModel(null, new RespondentRepositoryFake(respondents));
+
+			await mainWindowViewModel.LoadRespondents();
+
+			Assert.AreEqual(respondents.Length, mainWindowViewModel.Respondents.Count);
+
+			Assert.AreEqual(respondents[0].ReachedBlocks.Count, mainWindowViewModel.Respondents[0].ReachedBlocks.Count);
+			Assert.AreEqual(respondents[1].ReachedBlocks.Count, mainWindowViewModel.Respondents[1].ReachedBlocks.Count);
+			Assert.AreEqual(respondents[2].ReachedBlocks.Count, mainWindowViewModel.Respondents[2].ReachedBlocks.Count);
+
+			Assert.AreEqual(respondents[0].ReachedBlocks, mainWindowViewModel.Respondents[0].ReachedBlocks);
+			Assert.AreEqual(respondents[1].ReachedBlocks, mainWindowViewModel.Respondents[1].ReachedBlocks);
+			Assert.AreEqual(respondents[2].ReachedBlocks, mainWindowViewModel.Respondents[2].ReachedBlocks);
+
+		}
+
+		[TestMethod]
+		public void ReachedBlockCounter_Test()
+        {
+			Respondent[] respondents = CreateRespondents();
+
+			ReachedBlockCounter counter = new ReachedBlockCounter();
+
+			Assert.AreEqual(counter.Count(respondents, "A01"), 2);
+			Assert.AreEqual(counter.Count(respondents, "A02"), 2);
+			Assert.AreEqual(counter.Count(respondents, "B01"), 1);
+			Assert.AreEqual(counter.Count(respondents, "C01"), 3);
+			Assert.AreEqual(counter.Count(respondents, "C02"), 2);
+			Assert.AreEqual(counter.Count(respondents, "D01"), 3);
+			Assert.AreEqual(counter.Count(respondents, "D02"), 3);
+			Assert.AreEqual(counter.Count(respondents, "D03"), 2);
+		}
+		
+		public Respondent[] CreateRespondents()
+        {
 			HashSet<string> testhashset1 = new HashSet<string>()
 										   {
 												"A01", "A02", "C01", "D01", "D02"
@@ -52,31 +90,7 @@ namespace BlockLoader.Tests
 										   new Respondent(testhashset3)
 									   };
 
-			var mainWindowViewModel = new MainWindowViewModel(null, new RespondentRepositoryFake(respondents));
-
-			await mainWindowViewModel.LoadRespondents();
-
-			Assert.AreEqual(respondents.Length, mainWindowViewModel.Respondents.Count);
-
-			Assert.AreEqual(respondents[0].ReachedBlocks.Count, mainWindowViewModel.Respondents[0].ReachedBlocks.Count);
-			Assert.AreEqual(respondents[1].ReachedBlocks.Count, mainWindowViewModel.Respondents[1].ReachedBlocks.Count);
-			Assert.AreEqual(respondents[2].ReachedBlocks.Count, mainWindowViewModel.Respondents[2].ReachedBlocks.Count);
-
-			Assert.AreEqual(respondents[0].ReachedBlocks, mainWindowViewModel.Respondents[0].ReachedBlocks);
-			Assert.AreEqual(respondents[1].ReachedBlocks, mainWindowViewModel.Respondents[1].ReachedBlocks);
-			Assert.AreEqual(respondents[2].ReachedBlocks, mainWindowViewModel.Respondents[2].ReachedBlocks);
-
-			//Count Test
-			ReachedBlockCounter counter = new ReachedBlockCounter();
-
-			Assert.AreEqual(counter.Count(respondents, "A01"), 2);
-			Assert.AreEqual(counter.Count(respondents, "A02"), 2);
-			Assert.AreEqual(counter.Count(respondents, "B01"), 1);
-			Assert.AreEqual(counter.Count(respondents, "C01"), 3);
-			Assert.AreEqual(counter.Count(respondents, "C02"), 2);
-			Assert.AreEqual(counter.Count(respondents, "D01"), 3);
-			Assert.AreEqual(counter.Count(respondents, "D02"), 3);
-			Assert.AreEqual(counter.Count(respondents, "D03"), 2);
+			return respondents;
 		}
 	}
 }

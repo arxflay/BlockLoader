@@ -100,11 +100,8 @@ namespace BlockLoader.PresentationLayer
 		{
 			IsBusy = true;
 			IsGridVisible = false;
-
 			try
-			{
-				if (_respondentRepository != null) await LoadRespondents();
-				
+			{		
 				var blocks = await Task.Run(() => _blockRepository.LoadBlocks());
 				Blocks.Clear();
 
@@ -153,7 +150,13 @@ namespace BlockLoader.PresentationLayer
 			IsBusy = true;
 			try
 			{
+				if (Respondents.Count != 0)
+					Respondents.Clear();
+				
+				await LoadRespondents();
+
 				ReachedBlockCounter counter = new ReachedBlockCounter();
+
 				await Task.Run(() =>
 				{
 					foreach (var block in Blocks)
@@ -174,9 +177,9 @@ namespace BlockLoader.PresentationLayer
 		}
 
 
-		private static BlockViewModel CreateBlockViewModel(Block block, int respondentCount = 0)
+		private static BlockViewModel CreateBlockViewModel(Block block)
 		{
-			return new BlockViewModel(block.Code, block.Footage, block.Program, respondentCount);
+			return new BlockViewModel(block.Code, block.Footage, block.Program);
 		}
 	}
 }
