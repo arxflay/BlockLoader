@@ -61,7 +61,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Button Grid.Row="1"  Content="{x:Static properties:Resources.LoadBlocks}" HorizontalAlignment="Center" Margin="10, 10, 100, 10" Command="{Binding LoadBlocksCommand}"/>
+        <Button Grid.Row="1"  Content="{x:Static properties:Resources.LoadBlocks}" HorizontalAlignment="Center" Margin="10, 10, 100, 10" Command="{Binding LoadBlocksCommand}" IsEnabled="{Binding IsLoadBlocksEnabled}"/>
         <Button Grid.Row="1" Content="{x:Static properties:Resources.CountRespondents}" HorizontalAlignment="Center" Margin="110, 10, 10, 10" Command="{Binding CountRespondentsCommand}" IsEnabled="{Binding IsCountButtonEnabled}"/>
 
     </Grid>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BlockLoader.DataLayer;
 using BlockLoader.PresentationLayer;
+using BlockLoader.Business;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BlockLoader.Tests
@@ -20,7 +21,7 @@ namespace BlockLoader.Tests
 			             };
 
             var mainWindowViewModel = new MainWindowViewModel(new BlockRepositoryFake(blocks), null);
-			await mainWindowViewModel.LoadBlocks();
+			await mainWindowViewModel.LoadBlocksAsync();
 
 			Assert.AreEqual(blocks.Length, mainWindowViewModel.Blocks.Count);
 
@@ -37,7 +38,7 @@ namespace BlockLoader.Tests
 
 			var mainWindowViewModel = new MainWindowViewModel(null, new RespondentRepositoryFake(respondents));
 
-			await mainWindowViewModel.LoadRespondents();
+			await mainWindowViewModel.LoadRespondentsAsync();
 
 			Assert.AreEqual(respondents.Length, mainWindowViewModel.Respondents.Count);
 

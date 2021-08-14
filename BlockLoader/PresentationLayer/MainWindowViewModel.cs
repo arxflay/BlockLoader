@@ -6,6 +6,8 @@ using System.Windows.Input;
 using BlockLoader.DataLayer;
 using BlockLoader.Properties;
 using BlockLoader.Utils;
+using BlockLoader.Business;
+using System.Collections.Generic;
 
 namespace BlockLoader.PresentationLayer
 {
@@ -17,6 +19,7 @@ namespace BlockLoader.PresentationLayer
 		private bool _isGridVisible;
 		private bool _isCountButtonEnabled;
 		private bool _isCountRowVisible;
+		private bool _isLoadBlocksEnabled;
 
 		public MainWindowViewModel(IBlockRepository blockRepository, IRespondentRepository respondentRepository)
 		{
@@ -25,14 +28,17 @@ namespace BlockLoader.PresentationLayer
 			IsGridVisible = false;
 			IsCountButtonEnabled = false;
 			IsCountRowVisible = false;
+			IsLoadBlocksEnabled = true;
+			IsCountButtonEnabled = false;
 			Blocks = new ObservableCollection<BlockViewModel>();
-			Respondents = new ObservableCollection<Respondent>();
-			LoadBlocksCommand = new AsyncDelegateCommand(LoadBlocks);
-			CountRespondentsCommand = new AsyncDelegateCommand(CountRespondents);
+			Respondents = new List<Respondent>();
+			LoadBlocksCommand = new AsyncDelegateCommand(LoadBlocksAsync);
+			CountRespondentsCommand = new AsyncDelegateCommand(CountRespondentsAsync);
 		}
 
 		public ObservableCollection<BlockViewModel> Blocks { get; }
-		public ObservableCollection<Respondent> Respondents { get; }
+		public List<Respondent> Respondents { get; }
+
 		public bool IsBusy
 		{
 			get { return _isBusy; }
@@ -93,13 +99,35 @@ namespace BlockLoader.PresentationLayer
 			}
 		}
 
+		public bool IsLoadBlocksEnabled
+		{
+			get { return _isLoadBlocksEnabled; }
+			set
+			{
+				if (value == _isLoadBlocksEnabled)
+				{
+					return;
+				}
+
+				_isLoadBlocksEnabled = value;
+				NotifyPropertyChanged(() => IsLoadBlocksEnabled);
+			}
+		}
+
 		public ICommand LoadBlocksCommand { get; }
 		public ICommand CountRespondentsCommand { get; }
 
-		public async Task LoadBlocks()
+		public async Task LoadBlocksAsync()
 		{
 			IsBusy = true;
 			IsGridVisible = false;
+
+			if(IsCountRowVisible)
+				IsCountRowVisible = false;
+
+			if (IsCountButtonEnabled)
+				IsCountButtonEnabled = false;
+
 			try
 			{		
 				var blocks = await Task.Run(() => _blockRepository.LoadBlocks());
@@ -123,17 +151,20 @@ namespace BlockLoader.PresentationLayer
 				IsBusy = false;
 			}
 		}
-		public async Task LoadRespondents()
+		public async Task LoadRespondentsAsync()
         {
 			IsBusy = true;
+			IsGridVisible = false;
 			try
 			{
 				var respondents = await Task.Run(() => _respondentRepository.LoadRespondents());
 
-				foreach(var respondent in respondents)
+				foreach (var respondent in respondents)
                 {
 					Respondents.Add(respondent);
                 }
+
+				IsGridVisible = true;
 			}
 			catch (Exception)
             {
@@ -145,26 +176,28 @@ namespace BlockLoader.PresentationLayer
 				IsBusy = false;
             }
 		}
-		public async Task CountRespondents()
+		public async Task CountRespondentsAsync()
         {
 			IsBusy = true;
+			IsLoadBlocksEnabled = false;
 			try
 			{
 				if (Respondents.Count != 0)
 					Respondents.Clear();
 				
-				await LoadRespondents();
+				await LoadRespondentsAsync();
 
 				ReachedBlockCounter counter = new ReachedBlockCounter();
 
-				await Task.Run(() =>
+				for (int i = 0; i < Blocks.Count; i++)
 				{
-					foreach (var block in Blocks)
-					{
-						block.RespondentCount = counter.Count(Respondents, block.Code);
-					}
-				});
+					var block = Blocks[i];
+					int count = counter.Count(Respondents, block.Code);
+					Blocks[i] = new BlockViewModel(block.Code, block.Footage, block.Program, count);
+				}
+
 				IsCountRowVisible = true;
+				IsLoadBlocksEnabled = true;
 			}
 			catch (Exception)
             {

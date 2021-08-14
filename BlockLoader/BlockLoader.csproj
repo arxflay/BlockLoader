@@ -54,7 +54,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DataLayer\ReachedBlockCounter.cs" />
+    <Compile Include="Business\ReachedBlockCounter.cs" />
     <Compile Include="DataLayer\IRespondentRepository.cs" />
     <Compile Include="DataLayer\Respondent.cs" />
     <Compile Include="DataLayer\RespondentRepository.cs" />

@@ -141,4 +141,13 @@
   <data name="MainWindowTitle" xml:space="preserve">
     <value>Načítání bloků</value>
   </data>
+  <data name="CountRespondents" xml:space="preserve">
+    <value>Spočítej respondenty</value>
+  </data>
+  <data name="ErrorLoadingRespondents" xml:space="preserve">
+    <value>Nastala chyba během načítání respondentu.</value>
+  </data>
+  <data name="RespondentCount" xml:space="preserve">
+    <value>Počet respondentu</value>
+  </data>
 </root>
